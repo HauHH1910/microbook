@@ -2,7 +2,7 @@ package com.hauhh.identity.configuration;
 
 import java.io.IOException;
 
-import com.hauhh.identity.dto.request.ApiResponse;
+import com.hauhh.identity.dto.BasedResponse;
 import com.hauhh.identity.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,14 +23,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ApiResponse<?> apiResponse = ApiResponse.builder()
+        BasedResponse<?> basedResponse = BasedResponse.builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(basedResponse));
         response.flushBuffer();
     }
 }

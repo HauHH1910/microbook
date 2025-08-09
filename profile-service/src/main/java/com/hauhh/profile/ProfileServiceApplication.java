@@ -1,4 +1,4 @@
-package com.hauhh.profileservice;
+package com.hauhh.profile;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

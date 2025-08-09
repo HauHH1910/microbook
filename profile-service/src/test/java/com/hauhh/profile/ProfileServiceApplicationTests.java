@@ -1,4 +1,4 @@
-package com.hauhh.profileservice;
+package com.hauhh.profile;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

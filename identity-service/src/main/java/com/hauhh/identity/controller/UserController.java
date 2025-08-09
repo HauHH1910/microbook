@@ -2,7 +2,7 @@ package com.hauhh.identity.controller;
 
 import java.util.List;
 
-import com.hauhh.identity.dto.request.ApiResponse;
+import com.hauhh.identity.dto.BasedResponse;
 import com.hauhh.identity.dto.request.UserCreationRequest;
 import com.hauhh.identity.dto.request.UserUpdateRequest;
 import com.hauhh.identity.dto.response.UserResponse;
@@ -26,42 +26,42 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<UserResponse>builder()
+    BasedResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
+        return BasedResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
                 .build();
     }
 
     @GetMapping
-    ApiResponse<List<UserResponse>> getUsers() {
-        return ApiResponse.<List<UserResponse>>builder()
+    BasedResponse<List<UserResponse>> getUsers() {
+        return BasedResponse.<List<UserResponse>>builder()
                 .result(userService.getUsers())
                 .build();
     }
 
     @GetMapping("/{userId}")
-    ApiResponse<UserResponse> getUser(@PathVariable("userId") String userId) {
-        return ApiResponse.<UserResponse>builder()
+    BasedResponse<UserResponse> getUser(@PathVariable("userId") String userId) {
+        return BasedResponse.<UserResponse>builder()
                 .result(userService.getUser(userId))
                 .build();
     }
 
     @GetMapping("/my-info")
-    ApiResponse<UserResponse> getMyInfo() {
-        return ApiResponse.<UserResponse>builder()
+    BasedResponse<UserResponse> getMyInfo() {
+        return BasedResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
     }
 
     @DeleteMapping("/{userId}")
-    ApiResponse<String> deleteUser(@PathVariable String userId) {
+    BasedResponse<String> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
-        return ApiResponse.<String>builder().result("User has been deleted").build();
+        return BasedResponse.<String>builder().result("User has been deleted").build();
     }
 
     @PutMapping("/{userId}")
-    ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
-        return ApiResponse.<UserResponse>builder()
+    BasedResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request) {
+        return BasedResponse.<UserResponse>builder()
                 .result(userService.updateUser(userId, request))
                 .build();
     }
