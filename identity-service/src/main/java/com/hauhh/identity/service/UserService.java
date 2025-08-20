@@ -9,8 +9,8 @@ import com.hauhh.identity.dto.request.UserUpdateRequest;
 import com.hauhh.identity.dto.response.UserResponse;
 import com.hauhh.identity.entity.Role;
 import com.hauhh.identity.entity.User;
-import com.hauhh.identity.exception.AppException;
-import com.hauhh.identity.exception.ErrorCode;
+import com.hauhh.identity.exception.IdentityServiceException;
+import com.hauhh.identity.exception.ErrorConstant;
 import com.hauhh.identity.mapper.UserMapper;
 import com.hauhh.identity.repository.RoleRepository;
 import com.hauhh.identity.repository.UserRepository;
@@ -36,7 +36,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreationRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) throw new AppException(ErrorCode.USER_EXISTED);
+        if (userRepository.existsByUsername(request.getUsername())) throw new IdentityServiceException(ErrorConstant.USER_EXISTED);
 
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -53,14 +53,14 @@ public class UserService {
         var context = SecurityContextHolder.getContext();
         String name = context.getAuthentication().getName();
 
-        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new IdentityServiceException(ErrorConstant.USER_NOT_EXISTED));
 
         return userMapper.toUserResponse(user);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new IdentityServiceException(ErrorConstant.USER_NOT_EXISTED));
 
         userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -85,6 +85,6 @@ public class UserService {
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse getUser(String id) {
         return userMapper.toUserResponse(
-                userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
+                userRepository.findById(id).orElseThrow(() -> new IdentityServiceException(ErrorConstant.USER_NOT_EXISTED)));
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BasedResponse<T> {
+public class ResponseData<T> {
     @Builder.Default
     private int code = 200;
 
@@ -20,22 +20,22 @@ public class BasedResponse<T> {
 
     private T result;
 
-    public static <T> BasedResponse<T> created(T data, String message) {
-        return BasedResponse.<T>builder()
+    public static <T> ResponseData<T> created(T data, String message) {
+        return ResponseData.<T>builder()
                 .message(message)
                 .result(data)
                 .build();
     }
 
-    public static BasedResponse<Void> noContent(String message) {
-        return BasedResponse.<Void>builder()
+    public static ResponseData<Void> noContent(String message) {
+        return ResponseData.<Void>builder()
                 .code(HttpStatus.NO_CONTENT.value())
                 .message(message)
                 .build();
     }
 
-    public static <T> BasedResponse<T> ok(T data, String message) {
-        return BasedResponse.<T>builder()
+    public static <T> ResponseData<T> ok(T data, String message) {
+        return ResponseData.<T>builder()
                 .code(HttpStatus.OK.value())
                 .message(message)
                 .result(data)

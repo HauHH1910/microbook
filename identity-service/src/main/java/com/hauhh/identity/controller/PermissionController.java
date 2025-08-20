@@ -2,7 +2,7 @@ package com.hauhh.identity.controller;
 
 import java.util.List;
 
-import com.hauhh.identity.dto.BasedResponse;
+import com.hauhh.identity.dto.ResponseData;
 import com.hauhh.identity.dto.request.PermissionRequest;
 import com.hauhh.identity.dto.response.PermissionResponse;
 import com.hauhh.identity.service.PermissionService;
@@ -23,22 +23,22 @@ public class PermissionController {
     PermissionService permissionService;
 
     @PostMapping
-    BasedResponse<PermissionResponse> create(@RequestBody PermissionRequest request) {
-        return BasedResponse.<PermissionResponse>builder()
+    ResponseData<PermissionResponse> create(@RequestBody PermissionRequest request) {
+        return ResponseData.<PermissionResponse>builder()
                 .result(permissionService.create(request))
                 .build();
     }
 
     @GetMapping
-    BasedResponse<List<PermissionResponse>> getAll() {
-        return BasedResponse.<List<PermissionResponse>>builder()
+    ResponseData<List<PermissionResponse>> getAll() {
+        return ResponseData.<List<PermissionResponse>>builder()
                 .result(permissionService.getAll())
                 .build();
     }
 
     @DeleteMapping("/{permission}")
-    BasedResponse<Void> delete(@PathVariable String permission) {
+    ResponseData<Void> delete(@PathVariable String permission) {
         permissionService.delete(permission);
-        return BasedResponse.<Void>builder().build();
+        return ResponseData.<Void>builder().build();
     }
 }

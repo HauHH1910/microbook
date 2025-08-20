@@ -2,8 +2,8 @@ package com.hauhh.identity.configuration;
 
 import java.io.IOException;
 
-import com.hauhh.identity.dto.BasedResponse;
-import com.hauhh.identity.exception.ErrorCode;
+import com.hauhh.identity.dto.ResponseData;
+import com.hauhh.identity.exception.ErrorConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -18,19 +18,19 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
-        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+        ErrorConstant errorConstant = ErrorConstant.UNAUTHENTICATED;
 
-        response.setStatus(errorCode.getStatusCode().value());
+        response.setStatus(errorConstant.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        BasedResponse<?> basedResponse = BasedResponse.builder()
-                .code(errorCode.getCode())
-                .message(errorCode.getMessage())
+        ResponseData<?> responseData = ResponseData.builder()
+                .code(errorConstant.getCode())
+                .message(errorConstant.getMessage())
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        response.getWriter().write(objectMapper.writeValueAsString(basedResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(responseData));
         response.flushBuffer();
     }
 }

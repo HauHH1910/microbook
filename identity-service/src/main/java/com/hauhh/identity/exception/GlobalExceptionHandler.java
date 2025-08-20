@@ -3,91 +3,89 @@ package com.hauhh.identity.exception;
 import java.util.Map;
 import java.util.Objects;
 
-import com.hauhh.identity.dto.BasedResponse;
+import com.hauhh.identity.dto.ResponseError;
 import jakarta.validation.ConstraintViolation;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
-@Slf4j
+@RestControllerAdvice
+@Slf4j(topic = "Global Exception Handler")
 public class GlobalExceptionHandler {
 
     private static final String MIN_ATTRIBUTE = "min";
+    private static final String VALUE_ATTRIBUTE = "value";
+    private static final int FIRST_INDEX = 0;
 
     @ExceptionHandler(value = Exception.class)
-    ResponseEntity<BasedResponse> handlingRuntimeException(RuntimeException exception) {
-        log.error("Exception: ", exception);
-        BasedResponse basedResponse = new BasedResponse();
-
-        basedResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
-        basedResponse.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
-
-        return ResponseEntity.badRequest().body(basedResponse);
+    ResponseEntity<ResponseError> handlingRuntimeException(RuntimeException exception) {
+        log.error("Exception: {}", exception.getMessage(), exception);
+        return responseErrorMapping(ErrorConstant.UNCATEGORIZED_EXCEPTION, null);
     }
 
-    @ExceptionHandler(value = AppException.class)
-    ResponseEntity<BasedResponse> handlingAppException(AppException exception) {
-        ErrorCode errorCode = exception.getErrorCode();
-        BasedResponse basedResponse = new BasedResponse();
 
-        basedResponse.setCode(errorCode.getCode());
-        basedResponse.setMessage(errorCode.getMessage());
-
-        return ResponseEntity.status(errorCode.getStatusCode()).body(basedResponse);
+    @ExceptionHandler(value = IdentityServiceException.class)
+    ResponseEntity<ResponseError> handlingAppException(IdentityServiceException exception) {
+        log.error("IdentityServiceException: {}", exception.getMessage(), exception);
+        return responseErrorMapping(exception.getErrorConstant(), null);
     }
 
     @ExceptionHandler(value = AccessDeniedException.class)
-    ResponseEntity<BasedResponse> handlingAccessDeniedException(AccessDeniedException exception) {
-        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-
-        return ResponseEntity.status(errorCode.getStatusCode())
-                .body(BasedResponse.builder()
-                        .code(errorCode.getCode())
-                        .message(errorCode.getMessage())
-                        .build());
+    ResponseEntity<ResponseError> handlingAccessDeniedException(AccessDeniedException exception) {
+        log.error("AccessDeniedException: {}", exception.getMessage(), exception);
+        return responseErrorMapping(ErrorConstant.UNAUTHORIZED, null);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    ResponseEntity<BasedResponse> handlingValidation(MethodArgumentNotValidException exception) {
-        String enumKey = exception.getFieldError().getDefaultMessage();
-
-        ErrorCode errorCode = ErrorCode.INVALID_KEY;
+    public ResponseEntity<ResponseError> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, Object> attributes = null;
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
 
-            var constraintViolation =
-                    exception.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+        String enumKey = Objects.requireNonNull(ex.getFieldError()).getDefaultMessage();
+
+        ErrorConstant errorConstant;
+        try {
+            errorConstant = ErrorConstant.valueOf(enumKey);
+
+            ConstraintViolation<?> constraintViolation = ex.getBindingResult().getAllErrors()
+                    .get(FIRST_INDEX)
+                    .unwrap(ConstraintViolation.class);
 
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
-            log.info(attributes.toString());
-
-        } catch (IllegalArgumentException e) {
-
+            log.error("constraint violation: {}, exception:", attributes, ex);
+        } catch (IllegalArgumentException exception) {
+            log.error("invalid enum key: {}, exception: ", enumKey, ex);
+            errorConstant = ErrorConstant.INVALID_KEY;
         }
-
-        BasedResponse basedResponse = new BasedResponse();
-
-        basedResponse.setCode(errorCode.getCode());
-        basedResponse.setMessage(
-                Objects.nonNull(attributes)
-                        ? mapAttribute(errorCode.getMessage(), attributes)
-                        : errorCode.getMessage());
-
-        return ResponseEntity.badRequest().body(basedResponse);
+        return responseErrorMapping(errorConstant, attributes);
     }
 
-    private String mapAttribute(String message, Map<String, Object> attributes) {
-        String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
 
-        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
+    private String mapAttribute(String message, Map<String, Object> attributes) {
+        if (attributes.containsKey(VALUE_ATTRIBUTE)) {
+            return message.replace("{" + VALUE_ATTRIBUTE + "}", String.valueOf(attributes.get(VALUE_ATTRIBUTE)));
+        }
+        if (attributes.containsKey(MIN_ATTRIBUTE)) {
+            return message.replace("{" + MIN_ATTRIBUTE + "}", String.valueOf(attributes.get(MIN_ATTRIBUTE)));
+        }
+        return message;
+    }
+
+    private ResponseEntity<ResponseError> responseErrorMapping(ErrorConstant errorConstant, Map<String, Object> attributes) {
+        String message = errorConstant.getMessage();
+        if (attributes != null) {
+            message = mapAttribute(message, attributes);
+        }
+        return ResponseEntity.status(errorConstant.getStatusCode())
+                .body(ResponseError.builder()
+                        .code(errorConstant.getCode())
+                        .message(message)
+                        .build());
     }
 }
