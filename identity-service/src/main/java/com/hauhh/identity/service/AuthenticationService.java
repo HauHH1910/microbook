@@ -15,8 +15,8 @@ import com.hauhh.identity.dto.response.AuthenticationResponse;
 import com.hauhh.identity.dto.response.IntrospectResponse;
 import com.hauhh.identity.entity.InvalidatedToken;
 import com.hauhh.identity.entity.User;
-import com.hauhh.identity.exception.AppException;
-import com.hauhh.identity.exception.ErrorCode;
+import com.hauhh.identity.exception.IdentityServiceException;
+import com.hauhh.identity.exception.ErrorConstant;
 import com.hauhh.identity.repository.InvalidatedTokenRepository;
 import com.hauhh.identity.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +56,7 @@ public class AuthenticationService {
 
         try {
             verifyToken(token);
-        } catch (AppException e) {
+        } catch (IdentityServiceException e) {
             isValid = false;
         }
 
@@ -67,11 +67,11 @@ public class AuthenticationService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         var user = userRepository
                 .findByUsername(request.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                .orElseThrow(() -> new IdentityServiceException(ErrorConstant.USER_NOT_EXISTED));
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
-        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!authenticated) throw new IdentityServiceException(ErrorConstant.UNAUTHENTICATED);
 
         var token = generateToken(user);
 
@@ -107,7 +107,7 @@ public class AuthenticationService {
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
         var user =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+                userRepository.findByUsername(username).orElseThrow(() -> new IdentityServiceException(ErrorConstant.UNAUTHENTICATED));
 
         var token = generateToken(user);
 
@@ -127,7 +127,7 @@ public class AuthenticationService {
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
-                .issuer("devteria.com")
+                .issuer("microbook.com")
                 .issueTime(issueTime)
                 .expirationTime(expiryTime)
                 .jwtID(UUID.randomUUID().toString())
@@ -144,7 +144,7 @@ public class AuthenticationService {
             return new TokenInfo(jwsObject.serialize(), expiryTime);
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new IdentityServiceException(ErrorConstant.UNAUTHENTICATED);
         }
     }
 
@@ -157,10 +157,10 @@ public class AuthenticationService {
 
         var verified = signedJWT.verify(verifier);
 
-        if (!(verified && expiryTime.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!(verified && expiryTime.after(new Date()))) throw new IdentityServiceException(ErrorConstant.UNAUTHENTICATED);
 
         if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new IdentityServiceException(ErrorConstant.UNAUTHENTICATED);
 
         return signedJWT;
     }

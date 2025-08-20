@@ -1,19 +1,17 @@
-package com.hauhh.identity.exception;
+package com.hauhh.profile.exception;
 
-import java.util.Map;
-import java.util.Objects;
 
-import com.hauhh.identity.dto.ResponseError;
+import com.hauhh.profile.dto.ResponseError;
 import jakarta.validation.ConstraintViolation;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.nio.file.AccessDeniedException;
+import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j(topic = "Global Exception Handler")
@@ -30,8 +28,8 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(value = IdentityServiceException.class)
-    ResponseEntity<ResponseError> handlingAppException(IdentityServiceException exception) {
+    @ExceptionHandler(value = ProfileServiceException.class)
+    ResponseEntity<ResponseError> handlingAppException(ProfileServiceException exception) {
         log.error("IdentityServiceException: {}", exception.getMessage(), exception);
         return responseErrorMapping(exception.getErrorConstant(), null);
     }

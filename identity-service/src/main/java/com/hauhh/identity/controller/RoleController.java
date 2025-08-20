@@ -2,7 +2,7 @@ package com.hauhh.identity.controller;
 
 import java.util.List;
 
-import com.hauhh.identity.dto.request.ApiResponse;
+import com.hauhh.identity.dto.ResponseData;
 import com.hauhh.identity.dto.request.RoleRequest;
 import com.hauhh.identity.dto.response.RoleResponse;
 import com.hauhh.identity.service.RoleService;
@@ -23,22 +23,22 @@ public class RoleController {
     RoleService roleService;
 
     @PostMapping
-    ApiResponse<RoleResponse> create(@RequestBody RoleRequest request) {
-        return ApiResponse.<RoleResponse>builder()
+    ResponseData<RoleResponse> create(@RequestBody RoleRequest request) {
+        return ResponseData.<RoleResponse>builder()
                 .result(roleService.create(request))
                 .build();
     }
 
     @GetMapping
-    ApiResponse<List<RoleResponse>> getAll() {
-        return ApiResponse.<List<RoleResponse>>builder()
+    ResponseData<List<RoleResponse>> getAll() {
+        return ResponseData.<List<RoleResponse>>builder()
                 .result(roleService.getAll())
                 .build();
     }
 
     @DeleteMapping("/{role}")
-    ApiResponse<Void> delete(@PathVariable String role) {
+    ResponseData<Void> delete(@PathVariable String role) {
         roleService.delete(role);
-        return ApiResponse.<Void>builder().build();
+        return ResponseData.<Void>builder().build();
     }
 }
